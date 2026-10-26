@@ -1,0 +1,34 @@
+CREATE DATABASE IF NOT EXISTS tienda_adso CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE tienda_adso;
+CREATE TABLE IF NOT EXISTS clientes (
+id INT AUTO_INCREMENT PRIMARY KEY,
+nombre VARCHAR(100) NOT NULL,
+correo VARCHAR(120) NOT NULL UNIQUE
+) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS productos (
+id INT AUTO_INCREMENT PRIMARY KEY,
+nombre VARCHAR(100) NOT NULL,
+precio DECIMAL(12,2) NOT NULL CHECK (precio &gt; 0),
+
+ADSO · Taller práctico N.º 3 | FastAPI + MySQL/MariaDB
+
+stock INT NOT NULL DEFAULT 0 CHECK (stock &gt;= 0)
+) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS pedidos (
+id INT AUTO_INCREMENT PRIMARY KEY,
+cliente_id INT NOT NULL,
+fecha DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+estado VARCHAR(20) NOT NULL DEFAULT &#39;confirmado&#39;,
+total DECIMAL(12,2) NOT NULL DEFAULT 0,
+CONSTRAINT fk_pedido_cliente FOREIGN KEY (cliente_id) REFERENCES clientes(id)
+) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS detalle_pedidos (
+id INT AUTO_INCREMENT PRIMARY KEY,
+pedido_id INT NOT NULL,
+producto_id INT NOT NULL,
+cantidad INT NOT NULL CHECK (cantidad &gt; 0),
+precio_unitario DECIMAL(12,2) NOT NULL,
+subtotal DECIMAL(12,2) NOT NULL,
+FOREIGN KEY (pedido_id) REFERENCES pedidos(id),
+FOREIGN KEY (producto_id) REFERENCES productos(id)
+) ENGINE=InnoDB;
