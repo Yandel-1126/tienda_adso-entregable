@@ -1,0 +1,4 @@
+fastapi[standard]
+PyMySQL
+python-dotenv
+email-validator
