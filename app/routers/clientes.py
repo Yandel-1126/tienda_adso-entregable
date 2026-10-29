@@ -36,3 +36,20 @@ def crear(datos: ClienteCrear):
         raise HTTPException(409, 'Correo ya registrado') from exc
 
 
+@router.get('/{cliente_id}/pedidos')
+def listar_pedidos_cliente(cliente_id: int):
+    with conectar() as db:
+        with db.cursor() as cur:
+            #Verifica si el cliente existe
+            cur.execute('SELECT id FROM clientes WHERE id = %s', (cliente_id,)) 
+            if cur.fetchone() is None: 
+                raise HTTPException(404, 'Cliente no encontrado') #Si el cliente no existe arroja error 404
+
+            #Consultar los pedidos del cliente
+            cur.execute('''
+            SELECT id, fecha, estado, total
+            FROM pedidos
+            WHERE cliente_id = %s
+            ORDER BY fecha DESC
+            ''', (cliente_id,))
+            return cur.fetchall()
