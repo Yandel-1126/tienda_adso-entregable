@@ -103,4 +103,35 @@ def detalle(pedido_id: int):
             pedido['items'] = cur.fetchall()
             return pedido
 
-        
+@router.post('/{pedido_id}/cancelar')
+def cancelar_pedido(pedido_id: int):
+    with conectar() as db:
+        with db.cursor() as cur:
+            # Buscar el pedido y bloquear la fila para concurrencia
+            cur.execute('SELECT id, estado FROM pedidos WHERE id = %s FOR UPDATE', (pedido_id,))
+            pedido = cur.fetchone()
+            
+            if pedido is None:
+                raise HTTPException(404, 'Pedido no encontrado')
+            if pedido['estado'] == 'cancelado':
+                raise HTTPException(400, 'El pedido ya se encuentra cancelado')
+            
+            # Obtener los productos y cantidades del detalle del pedido
+            cur.execute('SELECT producto_id, cantidad FROM detalle_pedidos WHERE pedido_id = %s', (pedido_id,))
+            detalles = cur.fetchall()
+            
+            # Devolver el stock a cada producto
+            for item in detalles:
+                cur.execute(
+                    'UPDATE productos SET stock = stock + %s WHERE id = %s',
+                    (item['cantidad'], item['producto_id'])
+                )
+            
+            # Actualizar el estado del pedido a cancelado
+            cur.execute("UPDATE pedidos SET estado = 'cancelado' WHERE id = %s", (pedido_id,))
+            
+            return {
+                'mensaje': f'Pedido {pedido_id} cancelado exitosamente y stock devuelto al inventario',
+                'pedido_id': pedido_id,
+                'estado': 'cancelado'
+            }
