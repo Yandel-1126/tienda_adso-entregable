@@ -10,7 +10,6 @@ app = FastAPI(
 app.include_router(clientes.router)
 app.include_router(productos.router)
 app.include_router(pedidos.router)
-
 @app.get('/', tags=['Inicio'])
 def inicio():
  return {'mensaje': 'API tienda ADSO', 'documentacion': '/docs'}

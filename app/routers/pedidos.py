@@ -51,14 +51,14 @@ def crear(datos: PedidoCrear):
                     (pedido_id, producto_id, cantidad, precio, subtotal)
                 )
                 cur.execute(
-                    'UPDATE productos SET stock = stock - %s WHERE id = %s', #Descuenta del sctock lo que se halla pedido
+                    'UPDATE productos SET stock = stock - %s WHERE id = %s', #Descuenta del sctock lo que se halla hecho
                     (cantidad, producto_id)
                 )
 
             return { #Muestra los datos que se pidieron.
                 'id': pedido_id,
                 'cliente_id': datos.cliente_id,
-                'estado': 'confirmado',
+                'estado': 'cancelado',
                 'total': str(total),
                 'items': len(detalles)
             }
@@ -102,3 +102,5 @@ def detalle(pedido_id: int):
             
             pedido['items'] = cur.fetchall()
             return pedido
+
+        

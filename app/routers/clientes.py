@@ -53,3 +53,20 @@ def listar_pedidos_cliente(cliente_id: int):
             ORDER BY fecha DESC
             ''', (cliente_id,))
             return cur.fetchall()
+
+@router.put('/{cliente_id}', response_model=ClienteRespuesta)
+def actualizar_cliente(cliente_id: int, datos: ClienteCrear):
+    try:
+        with conectar() as db:
+            with db.cursor() as cur:
+                cur.execute(
+                    'UPDATE clientes SET nombre = %s, correo = %s WHERE id = %s',
+                    (datos.nombre, str(datos.correo), cliente_id)
+                )
+                if cur.rowcount == 0:
+                    raise HTTPException(404, 'Cliente no encontrado')
+                cur.execute('SELECT id, nombre, correo FROM clientes WHERE id = %s', (cliente_id,))
+                return cur.fetchone()
+    except IntegrityError as exc:
+        raise HTTPException(409, 'El correo ya está registrado por otro cliente') from exc
+

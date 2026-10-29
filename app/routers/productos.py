@@ -36,12 +36,14 @@ datos.precio, datos.stock))
         cur.execute('SELECT * FROM productos WHERE id=%s', (nuevo_id,))
         return cur.fetchone()
     
+
 @router.patch('/{producto_id}/stock', response_model=ProductoRespuesta)
 def cambiar_stock(producto_id: int, stock: int = Query(ge=0)):
     with conectar() as db:
         with db.cursor() as cur:
-            cur.execute('UPDATE productos SET stock=%s WHERE id=%s', (stock, producto_id))
-    if cur.rowcount == 0:
-        raise HTTPException(404, 'Producto no encontrado')
-    cur.execute('SELECT * FROM productos WHERE id=%s', (producto_id,))
-    return cur.fetchone()
+            cur.execute('UPDATE productos SET stock = %s WHERE id = %s', (stock, producto_id))
+            if cur.rowcount == 0:
+                raise HTTPException(404, 'Producto no encontrado')
+            
+            cur.execute('SELECT id, nombre, precio, stock FROM productos WHERE id = %s', (producto_id,))
+            return cur.fetchone()
