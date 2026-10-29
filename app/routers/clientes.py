@@ -70,3 +70,17 @@ def actualizar_cliente(cliente_id: int, datos: ClienteCrear):
     except IntegrityError as exc:
         raise HTTPException(409, 'El correo ya está registrado por otro cliente') from exc
 
+@router.delete('/{cliente_id}', status_code=204)
+def eliminar_cliente(cliente_id: int):
+    try:
+        with conectar() as db:
+            with db.cursor() as cur:
+                # Verificar si el cliente existe primero
+                cur.execute('SELECT id FROM clientes WHERE id = %s', (cliente_id,))
+                if cur.fetchone() is None:
+                    raise HTTPException(404, 'Cliente no encontrado')
+                
+                # Intentar eliminar (si tiene pedidos, la FK disparará IntegrityError)
+                cur.execute('DELETE FROM clientes WHERE id = %s', (cliente_id,))
+    except IntegrityError as exc:
+        raise HTTPException(409, 'No se puede eliminar el cliente porque tiene pedidos asociados') from exc
